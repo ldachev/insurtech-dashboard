@@ -20,4 +20,4 @@ Then open `http://127.0.0.1:8000/`.
 
 ## Data
 
-The dataset in `data/sec_company_fundamentals.json` is generated from the SEC EDGAR companyfacts API using latest annual 10-K facts. The subtitle uses `metadata.prepared_by` and `metadata.school`.
+The dataset in `data/sec_company_fundamentals.json` is generated from the SEC EDGAR companyfacts API using latest annual 10-K facts. 
