@@ -66,7 +66,14 @@ body {
   color: #9bc2ff;
 }
 
-.header-stat {
+.header-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.header-stat,
+.data-badge {
   min-width: 160px;
   padding: 14px 16px;
   border: 1px solid rgba(255, 255, 255, 0.24);
@@ -75,16 +82,20 @@ body {
 }
 
 .header-stat span,
-.header-stat strong {
+.header-stat strong,
+.data-badge span,
+.data-badge strong {
   display: block;
 }
 
-.header-stat span {
+.header-stat span,
+.data-badge span {
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.78rem;
 }
 
-.header-stat strong {
+.header-stat strong,
+.data-badge strong {
   margin-top: 4px;
   font-size: 1.2rem;
 }
@@ -111,6 +122,117 @@ section {
   margin: 2px 0 0;
   font-size: 1.45rem;
   letter-spacing: 0;
+}
+
+.executive-brief {
+  margin-top: 0;
+}
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.snapshot-card,
+.workspace-controls,
+.method-card,
+.deep-insight {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.snapshot-card {
+  padding: 16px;
+}
+
+.snapshot-card span,
+.control-title {
+  display: block;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.snapshot-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.45rem;
+}
+
+.snapshot-card small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.workspace-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.65fr) 1fr;
+  gap: 20px;
+  margin-top: 14px;
+  padding: 16px;
+}
+
+.filter-group,
+.takeaway-strip,
+.export-actions,
+.deep-insights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-group,
+.takeaway-strip {
+  margin-top: 10px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #c7d2e2;
+  border-radius: 8px;
+  background: #f9fbfe;
+  color: #25314a;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.filter-chip input {
+  accent-color: var(--blue);
+}
+
+.takeaway {
+  padding: 8px 10px;
+  border: 1px solid #c7d2e2;
+  border-radius: 8px;
+  background: #f9fbfe;
+  color: #25314a;
+  font-size: 0.86rem;
+}
+
+button {
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid #bfc9d8;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
 }
 
 .info-box {
@@ -327,6 +449,33 @@ select {
   font-size: 1.18rem;
 }
 
+.deep-insights {
+  margin-top: 12px;
+  margin-bottom: 14px;
+}
+
+.deep-insight {
+  min-width: 150px;
+  flex: 1 1 150px;
+  padding: 12px;
+  box-shadow: none;
+}
+
+.deep-insight span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.deep-insight strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
 .deep-grid {
   display: grid;
   grid-template-columns: 1fr minmax(360px, 0.8fr);
@@ -340,6 +489,45 @@ select {
   font-size: 1rem;
 }
 
+.source-links {
+  margin: 16px 0 0;
+}
+
+.source-links a {
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.source-links a:hover {
+  text-decoration: underline;
+}
+
+.methodology-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.method-card {
+  padding: 18px;
+}
+
+.method-card h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.method-card p {
+  margin: 0 0 10px;
+  color: #344054;
+  font-size: 0.92rem;
+}
+
+.method-card p:last-child {
+  margin-bottom: 0;
+}
+
 .source-note {
   fill: #718096;
   font-size: 11px;
@@ -347,6 +535,7 @@ select {
 
 @media (max-width: 980px) {
   .page-header,
+  .header-actions,
   .section-heading,
   .panel-head {
     align-items: flex-start;
@@ -359,7 +548,10 @@ select {
 
   .chart-grid,
   .deep-grid,
-  .metric-cards {
+  .metric-cards,
+  .snapshot-grid,
+  .workspace-controls,
+  .methodology-grid {
     grid-template-columns: 1fr;
   }
 
@@ -368,6 +560,7 @@ select {
   }
 
   .header-stat,
+  .data-badge,
   select {
     width: 100%;
   }

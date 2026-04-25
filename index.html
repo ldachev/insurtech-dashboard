@@ -13,13 +13,43 @@
         <h1>Insurtech & Proptech Competitive Intelligence Dashboard</h1>
         <p id="subtitle" class="subtitle">SEC 10-K filings | Prepared by Lyubomir Dachev | [School Name]</p>
       </div>
-      <div class="header-stat">
-        <span>Peer set</span>
-        <strong>6 companies</strong>
+      <div class="header-actions">
+        <div class="data-badge">
+          <span>Data refreshed</span>
+          <strong id="data-freshness">Loading</strong>
+        </div>
+        <div class="header-stat">
+          <span>Peer set</span>
+          <strong>6 companies</strong>
+        </div>
       </div>
     </header>
 
     <main>
+      <section class="executive-brief" aria-labelledby="snapshot-title">
+        <div class="section-heading with-control">
+          <div>
+            <p class="eyebrow">Executive Snapshot</p>
+            <h2 id="snapshot-title">Market Intelligence Workspace</h2>
+          </div>
+          <div class="export-actions">
+            <button id="download-csv" type="button">Download CSV</button>
+            <button id="export-scatter" type="button">Export Quadrant PNG</button>
+          </div>
+        </div>
+        <div id="top-stats" class="snapshot-grid"></div>
+        <div class="workspace-controls">
+          <div>
+            <p class="control-title">Sector Filters</p>
+            <div id="sector-filters" class="filter-group"></div>
+          </div>
+          <div>
+            <p class="control-title">Key Takeaways</p>
+            <div id="takeaways" class="takeaway-strip"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="summary-panel" aria-labelledby="summary-title">
         <div class="section-heading">
           <p class="eyebrow">Section 1</p>
@@ -122,7 +152,9 @@
           <div class="deep-grid">
             <div>
               <h3>Analyst Summary</h3>
+              <div id="deep-insights" class="deep-insights"></div>
               <p id="analyst-summary" class="analysis-text"></p>
+              <p id="source-links" class="source-links"></p>
             </div>
             <div>
               <h3>Peer-Normalized Radar</h3>
@@ -130,6 +162,33 @@
             </div>
           </div>
         </article>
+      </section>
+
+      <section aria-labelledby="methodology-title">
+        <div class="section-heading">
+          <p class="eyebrow">Methodology</p>
+          <h2 id="methodology-title">KPI Definitions & Source Notes</h2>
+        </div>
+        <div class="methodology-grid">
+          <article class="method-card">
+            <h3>Financial KPIs</h3>
+            <p><strong>Revenue</strong> is the latest annual 10-K revenue fact available in SEC companyfacts, reported in millions.</p>
+            <p><strong>Revenue Growth</strong> is latest annual revenue divided by prior-year annual revenue, minus one.</p>
+            <p><strong>Net Margin</strong> is net income divided by revenue. <strong>ROA</strong> is net income divided by total assets.</p>
+          </article>
+          <article class="method-card">
+            <h3>Capital & Efficiency</h3>
+            <p><strong>Debt/Equity</strong> uses available debt facts when reported and falls back to total liabilities when debt tags are not consistently available.</p>
+            <p><strong>OpEx Ratio</strong> is operating expense, costs and expenses, or insurance benefits/losses and expenses divided by revenue, depending on the SEC taxonomy used by each filer.</p>
+            <p><strong>Radar Scores</strong> normalize each metric from 0 to 100 across the peer set; lower OpEx is scored as better efficiency.</p>
+          </article>
+          <article class="method-card">
+            <h3>Data Source</h3>
+            <p>The dashboard uses the SEC EDGAR companyfacts API and latest annual 10-K facts for the six public peers.</p>
+            <p>Each company deep dive includes a direct SEC EDGAR link for filing verification.</p>
+            <p id="methodology-date"></p>
+          </article>
+        </div>
       </section>
     </main>
 
