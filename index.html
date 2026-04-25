@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Insurtech & Proptech Competitive Intelligence Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Public company peer intelligence</p>
+        <h1>Insurtech & Proptech Competitive Intelligence Dashboard</h1>
+        <p id="subtitle" class="subtitle">SEC 10-K filings | Prepared by Lyubomir Dachev | [School Name]</p>
+      </div>
+      <div class="header-stat">
+        <span>Peer set</span>
+        <strong>6 companies</strong>
+      </div>
+    </header>
+
+    <main>
+      <section class="summary-panel" aria-labelledby="summary-title">
+        <div class="section-heading">
+          <p class="eyebrow">Section 1</p>
+          <h2 id="summary-title">AI Market Summary</h2>
+        </div>
+        <div class="info-box">
+          <p id="market-summary"></p>
+        </div>
+      </section>
+
+      <section aria-labelledby="table-title">
+        <div class="section-heading">
+          <p class="eyebrow">Section 2</p>
+          <h2 id="table-title">KPI Comparison Table</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Ticker</th>
+                <th>Sector</th>
+                <th>Revenue ($M)</th>
+                <th>Revenue Growth (%)</th>
+                <th>Net Margin (%)</th>
+                <th>ROA (%)</th>
+                <th>Debt/Equity</th>
+                <th>OpEx Ratio (%)</th>
+              </tr>
+            </thead>
+            <tbody id="kpi-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section aria-labelledby="charts-title">
+        <div class="section-heading">
+          <p class="eyebrow">Section 3</p>
+          <h2 id="charts-title">KPI Bar Charts</h2>
+        </div>
+        <div class="chart-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Revenue by Company</h3>
+              <p>Absolute revenue scale by sector</p>
+            </div>
+            <div id="revenue-chart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Revenue Growth YoY</h3>
+              <p>Green bars indicate expansion</p>
+            </div>
+            <div id="growth-chart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Net Profit Margin</h3>
+              <p>Profitability separates mature operators from cash-burning insurtechs</p>
+            </div>
+            <div id="margin-chart" class="chart"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Debt-to-Equity</h3>
+              <p>Higher leverage is shown with stronger red</p>
+            </div>
+            <div id="de-chart" class="chart"></div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="quadrant-title">
+        <div class="section-heading">
+          <p class="eyebrow">Section 4</p>
+          <h2 id="quadrant-title">Strategic Quadrant Scatter Plot</h2>
+        </div>
+        <article class="panel">
+          <div class="panel-head">
+            <h3>Growth vs. Margin Positioning</h3>
+            <p>Bubble size reflects revenue; dashed lines mark 10% growth and 0% margin</p>
+          </div>
+          <div id="scatter-chart" class="scatter"></div>
+        </article>
+      </section>
+
+      <section aria-labelledby="deep-title">
+        <div class="section-heading with-control">
+          <div>
+            <p class="eyebrow">Section 5</p>
+            <h2 id="deep-title">Company Deep Dives</h2>
+          </div>
+          <label class="select-label">
+            <span>Company</span>
+            <select id="company-select"></select>
+          </label>
+        </div>
+        <article class="panel deep-dive">
+          <div id="metric-cards" class="metric-cards"></div>
+          <div class="deep-grid">
+            <div>
+              <h3>Analyst Summary</h3>
+              <p id="analyst-summary" class="analysis-text"></p>
+            </div>
+            <div>
+              <h3>Peer-Normalized Radar</h3>
+              <div id="radar-chart" class="radar"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
