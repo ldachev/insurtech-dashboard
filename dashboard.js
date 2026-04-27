@@ -4,9 +4,9 @@ const fmtRatio = (value) => `${Number(value).toFixed(2)}x`;
 const fmtValue = (value, formatter) => Number.isFinite(value) ? formatter(value) : "N/A";
 
 const sectorColors = {
-  "Insurtech": "#2b78d6",
-  "REIT / Proptech": "#6f8f3d",
-  "Specialty Insurance": "#14915f",
+  "Insurtech": "#4f46e5",
+  "REIT / Proptech": "#0d9488",
+  "Specialty Insurance": "#ea6a2c",
 };
 
 const metricMeta = {
@@ -88,6 +88,7 @@ function renderDashboard() {
   renderSectorFilters(companies);
   renderModeToggle();
   renderTakeaways(visibleCompanies.length ? visibleCompanies : companies);
+  renderSelectionSummary(companies);
   renderCompareTray(companies);
   renderMarketSummary(companies);
   renderTable(visibleCompanies, companies);
@@ -186,6 +187,8 @@ function renderSectorFilters(companies) {
 function renderModeToggle() {
   document.getElementById("mode-latest").classList.toggle("active", state.mode === "latest");
   document.getElementById("mode-trend").classList.toggle("active", state.mode === "trend");
+  document.getElementById("mode-latest").setAttribute("aria-pressed", state.mode === "latest");
+  document.getElementById("mode-trend").setAttribute("aria-pressed", state.mode === "trend");
 }
 
 function renderTakeaways(companies) {
@@ -202,6 +205,62 @@ function renderTakeaways(companies) {
   document.getElementById("takeaways").innerHTML = items
     .map((item) => `<button class="takeaway" type="button">${item}</button>`)
     .join("");
+}
+
+function renderSelectionSummary(companies) {
+  const container = document.getElementById("selection-summary");
+  const selected = state.selectedTicker
+    ? companies.find((company) => company.ticker === state.selectedTicker)
+    : null;
+  const leader = maxBy(companies, "net_margin_pct");
+  const grower = maxBy(companies, "revenue_growth_pct");
+
+  if (!selected) {
+    container.innerHTML = `
+      <article class="selection-card">
+        <div>
+          <p class="control-title">Focus Company</p>
+          <strong>No company selected</strong>
+          <span>Choose a row, chart mark, or profile to pin a company view.</span>
+        </div>
+        <div class="selection-metrics">
+          ${selectionMetric("Margin leader", `${leader.ticker} ${fmtPct(metrics(leader).net_margin_pct)}`)}
+          ${selectionMetric("Growth leader", `${grower.ticker} ${fmtPct(metrics(grower).revenue_growth_pct)}`)}
+          ${selectionMetric("Visible mode", state.mode === "trend" ? "3-year trend" : "Latest year")}
+        </div>
+      </article>
+    `;
+    return;
+  }
+
+  const profile = companyProfile(selected, companies);
+  const m = metrics(selected);
+  container.innerHTML = `
+    <article class="selection-card selected">
+      <div>
+        <p class="control-title">Focus Company</p>
+        <strong>${selected.company} <span class="ticker-pill" style="background:${sectorColors[selected.sector]}">${selected.ticker}</span></strong>
+        <span>${profile.label} | #${profile.rank} overall | Filed ${formatDate(selected.filing_date)}</span>
+      </div>
+      <div class="selection-metrics">
+        ${selectionMetric("Revenue", fmtMoney(m.revenue_m))}
+        ${selectionMetric("Growth", fmtPct(m.revenue_growth_pct), medianDelta(companies, selected, "revenue_growth_pct"))}
+        ${selectionMetric("Margin", fmtPct(m.net_margin_pct), medianDelta(companies, selected, "net_margin_pct"))}
+        ${selectionMetric("Watch", profile.worst)}
+      </div>
+      <a class="selection-link" href="${secCompanyUrl(selected.cik)}" target="_blank" rel="noopener">SEC filings</a>
+    </article>
+  `;
+}
+
+function selectionMetric(label, value, note = "") {
+  return `
+    <div class="selection-metric">
+      <span>${label}</span>
+      <strong>${value}</strong>
+      ${note ? `<small>${note}</small>` : ""}
+    </div>
+  `;
 }
 
 function renderCompareTray(companies) {
@@ -285,7 +344,21 @@ function evidenceItem(label, company, claim) {
 
 function renderTable(companies, allCompanies) {
   document.getElementById("table-search").value = state.search;
+  document.getElementById("table-status").textContent =
+    `${companies.length} of ${allCompanies.length} companies shown`;
   const tbody = document.getElementById("kpi-table");
+  if (!companies.length) {
+    tbody.innerHTML = `
+      <tr class="empty-table-row">
+        <td colspan="11">
+          <div class="empty-state compact">No companies match the current search and sector filters.</div>
+        </td>
+      </tr>
+    `;
+    renderMobileCards(companies, allCompanies);
+    updateSortButtons();
+    return;
+  }
   tbody.innerHTML = companies.map((company) => {
     const m = metrics(company);
     const sectorColor = sectorColors[company.sector];
@@ -306,6 +379,10 @@ function renderTable(companies, allCompanies) {
     `;
   }).join("");
   renderMobileCards(companies, allCompanies);
+  updateSortButtons();
+}
+
+function updateSortButtons() {
   document.querySelectorAll(".sort-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.sort === state.sortKey);
     button.dataset.dir = button.dataset.sort === state.sortKey ? state.sortDir : "";
@@ -335,6 +412,11 @@ function benchmarkBadge(company, companies, key) {
 }
 
 function renderMobileCards(companies, allCompanies) {
+  if (!companies.length) {
+    document.getElementById("mobile-cards").innerHTML =
+      `<div class="empty-state compact">No companies match the current search and sector filters.</div>`;
+    return;
+  }
   document.getElementById("mobile-cards").innerHTML = companies.map((company) => `
     <article class="mobile-card ${rowClass(company.ticker)}" data-ticker="${company.ticker}">
       <div>
@@ -871,6 +953,12 @@ function maxBy(companies, key) {
 function signedDelta(value, formatter) {
   const prefix = value > 0 ? "+" : "";
   return `${prefix}${formatter(value)} vs base`;
+}
+
+function medianDelta(companies, company, key) {
+  const value = metrics(company)[key] - median(companies, key);
+  const prefix = value > 0 ? "+" : "";
+  return `${prefix}${metricMeta[key].formatter(value)} vs median`;
 }
 
 function redScale(value, min, max) {
