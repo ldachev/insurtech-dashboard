@@ -161,6 +161,33 @@ def annual_facts(facts: dict[str, Any], tags: list[str]) -> dict[int, float]:
     return {fy: value for fy, (_, value) in yearly.items()}
 
 
+def annual_filing_dates(facts: dict[str, Any], tags: list[str]) -> dict[int, str]:
+    us_gaap = facts.get("facts", {}).get("us-gaap", {})
+    yearly: dict[int, str] = {}
+    for tag in tags:
+        fact = us_gaap.get(tag)
+        if not fact:
+            continue
+        for unit_values in fact.get("units", {}).values():
+            for item in unit_values:
+                if item.get("form") != "10-K" or item.get("fp") != "FY":
+                    continue
+                fy = item.get("fy")
+                filed = item.get("filed", "")
+                frame = item.get("frame", "")
+                if fy is None or not filed:
+                    continue
+                if frame and not str(frame).startswith("CY"):
+                    continue
+                try:
+                    fy_int = int(fy)
+                except (TypeError, ValueError):
+                    continue
+                if filed > yearly.get(fy_int, ""):
+                    yearly[fy_int] = filed
+    return yearly
+
+
 def latest_and_previous(series: dict[int, float]) -> tuple[int | None, float | None, float | None]:
     years = sorted(series)
     if not years:
@@ -255,10 +282,61 @@ def sum_latest(facts: dict[str, Any], tags: list[str], year: int | None) -> floa
     return total if found else None
 
 
+def sum_for_year(facts: dict[str, Any], tags: list[str], year: int | None) -> float | None:
+    if year is None:
+        return None
+    total = 0.0
+    found = False
+    for tag in tags:
+        value = annual_facts(facts, [tag]).get(year)
+        if value is not None:
+            total += value
+            found = True
+    return total if found else None
+
+
 def round_or_none(value: float | None, digits: int = 1) -> float | None:
     if value is None or not math.isfinite(value):
         return None
     return round(value, digits)
+
+
+def build_annual_metrics(
+    facts: dict[str, Any],
+    revenue_series: dict[int, float],
+    net_income_series: dict[int, float],
+    asset_series: dict[int, float],
+    equity_series: dict[int, float],
+    liability_series: dict[int, float],
+    opex_series: dict[int, float],
+    years: int = 5,
+) -> list[dict[str, float | int | None]]:
+    history = []
+    for fiscal_year in sorted(revenue_series)[-years:]:
+        revenue = revenue_series.get(fiscal_year)
+        previous_revenue = revenue_series.get(fiscal_year - 1)
+        net_income = latest_value(net_income_series, fiscal_year)
+        assets = latest_value(asset_series, fiscal_year)
+        equity = latest_value(equity_series, fiscal_year)
+        liabilities = latest_value(liability_series, fiscal_year)
+        debt = sum_for_year(facts, DEBT_TAGS, fiscal_year) or liabilities
+        opex = latest_value(opex_series, fiscal_year)
+        revenue_growth = safe_pct(
+            None if revenue is None or previous_revenue is None else revenue - previous_revenue,
+            previous_revenue,
+        )
+        history.append(
+            {
+                "fiscal_year": fiscal_year,
+                "revenue_m": round_or_none(revenue / 1_000_000 if revenue is not None else None, 1),
+                "revenue_growth_pct": round_or_none(revenue_growth, 1),
+                "net_margin_pct": round_or_none(safe_pct(net_income, revenue), 1),
+                "roa_pct": round_or_none(safe_pct(net_income, assets), 1),
+                "debt_to_equity": round_or_none(safe_ratio(debt, equity), 2),
+                "opex_ratio_pct": round_or_none(safe_pct(opex, revenue), 1),
+            }
+        )
+    return history
 
 
 def analyst_summary(company: Company, metrics: dict[str, float | int | None]) -> str:
@@ -318,6 +396,7 @@ def main() -> None:
 
         revenue_tag, revenue_series = pick_revenue_series(facts)
         fiscal_year, revenue, previous_revenue = latest_and_previous(revenue_series)
+        filing_dates = annual_filing_dates(facts, [revenue_tag] if revenue_tag else REVENUE_TAGS)
         _, net_income_series = pick_series(facts, NET_INCOME_TAGS)
         _, asset_series = pick_series(facts, ASSET_TAGS)
         _, equity_series = pick_series(facts, EQUITY_TAGS)
@@ -349,6 +428,15 @@ def main() -> None:
             "debt_to_equity": round_or_none(debt_to_equity, 2),
             "opex_ratio_pct": round_or_none(opex_ratio, 1),
         }
+        annual_metrics = build_annual_metrics(
+            facts,
+            revenue_series,
+            net_income_series,
+            asset_series,
+            equity_series,
+            liability_series,
+            opex_series,
+        )
 
         company_rows.append(
             {
@@ -357,8 +445,10 @@ def main() -> None:
                 "sector": company.sector,
                 "why": company.why,
                 "cik": cik,
+                "filing_date": filing_dates.get(fiscal_year),
                 "revenue_tag": revenue_tag,
                 "metrics": metrics,
+                "annual_metrics": annual_metrics,
                 "analysis": analyst_summary(company, metrics),
             }
         )
@@ -385,7 +475,7 @@ def main() -> None:
             "title": "Insurtech & Proptech Competitive Intelligence Dashboard",
             "source": "SEC EDGAR companyfacts API, latest annual 10-K facts",
             "prepared_by": "Lyubomir Dachev",
-            "school": "[School Name]",
+            "school": "Fordham Gabelli School of Business",
             "generated_on": date.today().isoformat(),
         },
         "companies": company_rows,

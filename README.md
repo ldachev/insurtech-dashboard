@@ -31,3 +31,5 @@ The dataset in `data/sec_company_fundamentals.json` is generated from the SEC ED
 - Company deep dives with peer rank, best metric, watch item, SEC EDGAR source link, and radar chart
 - CSV export for KPIs and PNG export for the strategic quadrant chart
 - Methodology section explaining KPI definitions and SEC source assumptions
+- Linked company selection across the table, charts, scatter plot, and deep-dive panel
+- 2-3 peer compare tray with KPI deltas, latest-year and 3-year trend modes, sortable/searchable table, URL state, and analyst notes
