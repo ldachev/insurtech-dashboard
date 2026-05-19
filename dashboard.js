@@ -96,6 +96,7 @@ function renderDashboard() {
   renderScatter(visibleCompanies);
   renderDeepDive(companies);
   wireControls(companies, visibleCompanies);
+  applyInteractionClasses();
   updateUrlState();
 }
 
@@ -564,13 +565,20 @@ function renderScatter(companies) {
 
 function renderDeepDive(companies) {
   const select = document.getElementById("company-select");
-  const selectedTicker = state.selectedTicker || companies[0].ticker;
+  const selectedTicker = companies.some((company) => company.ticker === state.selectedTicker)
+    ? state.selectedTicker
+    : null;
   state.selectedTicker = selectedTicker;
   select.innerHTML = companies
     .map((company) => `<option value="${company.ticker}">${company.company} (${company.ticker})</option>`)
     .join("");
-  select.value = selectedTicker;
-  updateDeepDive(companies, selectedTicker);
+  if (selectedTicker) {
+    select.value = selectedTicker;
+    updateDeepDive(companies, selectedTicker);
+  } else {
+    select.selectedIndex = -1;
+    renderEmptyDeepDive();
+  }
 }
 
 function updateDeepDive(companies, ticker) {
@@ -598,6 +606,18 @@ function updateDeepDive(companies, ticker) {
     `<a href="${secCompanyUrl(company.cik)}" target="_blank" rel="noopener">View ${company.ticker} filings on SEC EDGAR</a>`;
   document.getElementById("company-note").value = getCompanyNote(company.ticker);
   renderRadar(companies, company);
+}
+
+function renderEmptyDeepDive() {
+  document.getElementById("metric-cards").innerHTML = `
+    <div class="empty-state compact">Select a company from the table, chart, scatter plot, or dropdown to view the profile.</div>
+  `;
+  document.getElementById("deep-insights").innerHTML = "";
+  document.getElementById("analyst-summary").textContent =
+    "No focus company is selected. Pick any peer to update the profile, radar chart, table highlight, chart highlight, URL state, and compare tray.";
+  document.getElementById("source-links").innerHTML = "";
+  document.getElementById("company-note").value = "";
+  document.getElementById("radar-chart").innerHTML = `<div class="empty-state compact">No company selected.</div>`;
 }
 
 function companyProfile(company, companies) {
@@ -733,11 +753,11 @@ function wireControls(companies, visibleCompanies) {
     };
     element.onmouseenter = () => {
       state.hoverTicker = ticker;
-      renderDashboard();
+      applyInteractionClasses();
     };
     element.onmouseleave = () => {
       state.hoverTicker = null;
-      renderDashboard();
+      applyInteractionClasses();
     };
   });
   document.querySelectorAll("[data-remove-compare]").forEach((button) => {
@@ -753,11 +773,21 @@ function wireControls(companies, visibleCompanies) {
 }
 
 function selectCompany(ticker, addCompare) {
+  if (!dashboardData.companies.some((company) => company.ticker === ticker)) return;
   state.selectedTicker = ticker;
   if (addCompare && !state.compareTickers.includes(ticker)) {
     state.compareTickers = [...state.compareTickers, ticker].slice(-3);
   }
   renderDashboard();
+}
+
+function applyInteractionClasses() {
+  document.querySelectorAll("[data-ticker]").forEach((element) => {
+    const ticker = element.dataset.ticker;
+    element.classList.toggle("is-selected", isSelected(ticker));
+    element.classList.toggle("is-hovered", state.hoverTicker === ticker);
+    element.classList.toggle("is-compared", state.compareTickers.includes(ticker));
+  });
 }
 
 function rowClass(ticker) {
